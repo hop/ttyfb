@@ -34,7 +34,14 @@ class Kinemacolor:
         out('\033[38;5;15m')
         out('\033[48;5;0m')
 
-        out(''.join(chr(0x2800+c) for c in self.gfx_buffer))
+        def r():
+            for g, c, t in zip(self.gfx_buffer, self.clr_buffer, self.txt_buffer):
+                if t:
+                    yield t
+                else:
+                    yield chr(0x2800+g)
+
+        out(''.join(r()))
 
     def set_pixel(self, x, y):
         if not (0 < x < self.w and 0 < y < self.h):
