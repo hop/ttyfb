@@ -1,6 +1,7 @@
 import array
 import os
 import sys
+import time
 
 DOTS = {
     (0, 0): 1,
@@ -17,6 +18,9 @@ out = sys.stdout.write
 
 
 class Kinemacolor:
+    debug = bool(os.environ.get('DEBUG', False))
+    __t = 0
+
     def __init__(self):
         w, h = os.get_terminal_size()
         self._size = w * h
@@ -33,6 +37,10 @@ class Kinemacolor:
         out('\033[H\033[0m')
         out('\033[38;5;15m')
         out('\033[48;5;0m')
+
+        if self.debug:
+            t, self.__t = self.__t, time.time()
+            self.txt_buffer[:10] = list(f'{1/(self.__t - t):6.2f} fps')
 
         def r():
             for g, c, t in zip(self.gfx_buffer, self.clr_buffer, self.txt_buffer):
