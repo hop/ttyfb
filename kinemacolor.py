@@ -19,24 +19,19 @@ out = sys.stdout.write
 class Kinemacolor:
     def __init__(self):
         w, h = os.get_terminal_size()
+        self._size = w * h
         self.w = 2 * w
         self.h = 5 * h
-
-        self._clear = array.array('B', [0] * w * h)
-        self.gfx_buffer = array.array('I', self._clear)
-        self.txt_buffer = [' '] * w * h
+        self.clear()
 
     def clear(self):
-        self.gfx_buffer = self._clear[:]
-        self.txt_buffer = [' '] * self.w * self.h
+        self.gfx_buffer = array.array('B', [0] * self._size)
+        self.clr_buffer = array.array('I', [0x00ff] * self._size)
+        self.txt_buffer = [None] * self._size
 
     def render(self):
         out('\033[H\033[0m')
-
-        # Fix for xterm black-on-white
         out('\033[38;5;15m')
-
-        # Force the background color too
         out('\033[48;5;0m')
 
         out(''.join(chr(0x2800+c) for c in self.gfx_buffer))
