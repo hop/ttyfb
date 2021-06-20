@@ -114,4 +114,9 @@ if __name__ == "__main__":
                 for (x1, y1), (x2, y2) in pairwise(segment):
                     demo.line(x1, y1, x2, y2)
 
+        for x in range(demo.w):
+            for y in range(demo.h):
+                c = int(8 * (math.sin(elevation_function(x/demo.w, y/demo.h) * math.pi) * .5 + .5)) + 8
+                demo.set_color(x, y, 0, c)
+
         demo.render()

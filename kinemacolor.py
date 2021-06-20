@@ -30,20 +30,23 @@ class Kinemacolor:
 
     def clear(self):
         self.gfx_buffer = array.array('B', [0] * self._size)
-        self.clr_buffer = array.array('I', [0x00ff] * self._size)
+        self.clr_buffer = array.array('I', [0x0f00] * self._size)
         self.txt_buffer = [None] * self._size
 
     def render(self):
         out('\033[H\033[0m')
-        out('\033[38;5;15m')
-        out('\033[48;5;0m')
 
         if self.debug:
             t, self.__t = self.__t, time.time()
             self.txt_buffer[:10] = list(f'{1/(self.__t - t):6.2f} fps')
 
         def r():
+            fg, bg = None, None
             for g, c, t in zip(self.gfx_buffer, self.clr_buffer, self.txt_buffer):
+                f, b = divmod(c, 256)
+                if (f, b) != (fg, bg):
+                    fg, bg = f, b
+                    yield f'\033[38;5;{fg}m\033[48;5;{bg}m'
                 if t:
                     yield t
                 else:
@@ -51,7 +54,7 @@ class Kinemacolor:
 
         out(''.join(r()))
 
-    def set_pixel(self, x, y):
+    def set_pixel(self, x, y, color=None, bg_color=None):
         if not (0 < x < self.w and 0 < y < self.h):
             return
 
@@ -61,6 +64,16 @@ class Kinemacolor:
         p = py * (self.w//2) + px
         v = DOTS.get((x, y), 0)
         self.gfx_buffer[p] |= v
+
+        if color is not None:
+            self.set_color(x, y, color, bg_color)
+
+    def set_color(self, x, y, fg, bg=None):
+        px, x = divmod(int(x), 2)
+        py, y = divmod(int(y), 5)
+
+        p = py * (self.w//2) + px
+        self.clr_buffer[p] = fg << 8 | bg
 
     def line(self, x0, y0, x1, y1):
         dx = x1 - x0
@@ -121,5 +134,10 @@ if __name__ == '__main__':
     demo.line(0, 0, demo.w-1, demo.h-1)
     demo.line(0, demo.h-1, demo.w-1, 0)
     demo.circle(demo.w//2, demo.h//2, demo.h//3)
+
+    for x in range(demo.w):
+        for y in range(demo.h):
+            demo.set_color(x, y, int(y//5 % 8)+8, int(x//2 % 8))
+
     demo.render()
     input()
